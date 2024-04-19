@@ -1,0 +1,36 @@
+version: '2'
+
+services:
+  db-documents-hub:
+    image: postgres
+    environment:
+      POSTGRES_USER: documents-user
+      POSTGRES_PASSWORD: documents-pass
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: db-documents-hub
+    ports:
+      - 5432:5432
+    volumes:
+      - ../sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - PG-DATA-documentsHub:/var/lib/postgresql/data
+  keycloak1:
+    image: quay.io/keycloak/keycloak:23.0.4
+    command: start-dev --import-realm
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=password
+      - KEYCLOAK_LOGLEVEL= DEBUG
+    ports:
+      - 8080:8080
+    volumes:
+      - ./data:/opt/keycloak/data/import
+    depends_on:
+      - db-documents-hub
+  maildev:
+    image: maildev/maildev:latest
+    ports:
+      - 1080:1080
+      - 1025:1025
+
+volumes:
+  PG-DATA-documentsHub:
